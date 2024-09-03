@@ -1,30 +1,15 @@
-import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
+import { NavBalnkComponent } from "../../components/nav-balnk/nav-balnk.component";
+import { RouterOutlet } from '@angular/router';
+import { FooterComponent } from "../../components/footer/footer.component";
 
 @Component({
   selector: 'app-blank-layout',
+  standalone: true,
+  imports: [NavBalnkComponent, RouterOutlet, FooterComponent],
   templateUrl: './blank-layout.component.html',
-  styleUrls: ['./blank-layout.component.scss'],
-  animations: [
-    trigger('fade', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('300ms', style({ opacity: 1 })),
-      ]),
-      transition(':leave', [animate('300ms', style({ opacity: 0 }))]),
-    ]),
-  ],
+  styleUrl: './blank-layout.component.scss'
 })
 export class BlankLayoutComponent {
-  constructor() {}
 
-  isButtonVisible: boolean = false;
-  goUp(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  @HostListener('window:scroll')
-  onScroll(): void {
-    this.isButtonVisible = window.scrollY > 100;
-  }
 }

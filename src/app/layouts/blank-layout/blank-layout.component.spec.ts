@@ -6,10 +6,12 @@ describe('BlankLayoutComponent', () => {
   let component: BlankLayoutComponent;
   let fixture: ComponentFixture<BlankLayoutComponent>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [BlankLayoutComponent]
-    });
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [BlankLayoutComponent]
+    })
+    .compileComponents();
+    
     fixture = TestBed.createComponent(BlankLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

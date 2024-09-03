@@ -6,10 +6,12 @@ describe('WishlistComponent', () => {
   let component: WishlistComponent;
   let fixture: ComponentFixture<WishlistComponent>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [WishlistComponent]
-    });
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [WishlistComponent]
+    })
+    .compileComponents();
+    
     fixture = TestBed.createComponent(WishlistComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

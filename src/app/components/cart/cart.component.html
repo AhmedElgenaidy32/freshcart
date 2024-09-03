@@ -1,95 +1,56 @@
-<section class="pt-5">
-  <div class="cartCaption text-center" *ngIf="isEmpty">
-    <img
-      src="./assets/images/empty_cart.svg"
-      class="w-100 emptyCart my-5"
-      alt=""
-    />
-    <h3>Your <span class="main-color">Cart</span> Is Empty!</h3>
-  </div>
-
-  <div class="secTitle mb-4" *ngIf="!isEmpty">
-    <h3 class="text-center">Your <span class="main-color">Cart</span></h3>
-  </div>
-
-  <div class="bg-main-light p-5 rounded-2 shadow-sm" *ngIf="!isEmpty">
-    <div class="clearBtn d-flex">
-      <button
-        class="btn btn-danger rounded-pill px-3 text-white ms-auto"
-        (click)="removeAllProducts()"
-      >
-        <i class="fa-solid fa-trash-can"></i> Clear cart
-      </button>
+@if (btn) {
+    <section class="bg-main-light rounded-4 shadow w-75 mx-auto p-2">
+        <h2 class="text-center">shop Cart :</h2>
+    
+       
+            <button (click)="DeleteAllInCart()" class="btn btn-danger  d-block mx-auto">Clear Cart</button>
+       
+    
+    
+        <p class="text-main h4">total Price {{DataCart.totalCartPrice |currency:'GBP'}} </p>
+    
+    
+        <div class="container-fluid">
+    
+       @for (item of DataCart.products ; track item.product._id) {
+        <div class="row mb-2 border-bottom">
+            <div class="col-md-2">
+                <img [src]="item.product.imageCover"class="w-100 rounded-4" [alt]="item.product.title">
+            </div>
+            <div class="col-md-10">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column justify-content-around align-items-start ">        
+                        <h5 class="my-4"> {{item.product.title}} </h5>
+                        <p class="text-main my-4"> {{item.price|currency:'GBP'}} </p>
+                        <span class="text-danger cursor-pointer my-4" (click)="DeleteItem(item.product._id)"><i class="fa-solid fa-trash fa-1x"></i></span>
+                       </div>
+                    <div class="d-flex align-items-center  gap-3">
+                        <span class="text-main cursor-pointer" (click)="UpdateCountNUM(item.product._id, item.count +1)"><i class="fa-solid fa-circle-plus fa-2x"></i></span>
+                        <span> {{item.count}} </span>
+                        <span class="text-main cursor-pointer"  (click)="UpdateCountNUM(item.product._id, item.count -1)"><i class="fa-solid fa-circle-minus fa-2x"></i></span>
+                    </div>
+                </div>
+    
     </div>
-    <h4 class="h6 border-bottom pb-4">
-      <span class="main-color fw-bold">Total Price: </span
-      >{{ cartData.totalCartPrice | currency : "EGP " }}
-    </h4>
-    <div
-      class="row border-bottom py-4"
-      *ngFor="let product of cartData.products"
-    >
-      <div class="col-md-2">
-        <img
-          class="w-100 img-thumbnail mb-3 mb-md-0"
-          [src]="product.product.imageCover"
-          [alt]="product.product.title"
-          alt=""
-        />
-      </div>
-      <div class="col-md-10 d-flex justify-content-between align-items-center">
-        <div class="product-data">
-          <h3 class="h5 fw-bold">{{ product.product.title | cuttext }}</h3>
-          <h4 class="h6">
-            <span class="main-color fw-bold">Price: </span
-            >{{ product.price | currency : "EGP " }}
-          </h4>
-          <button
-            class="remove-btn btn ps-0 ms-0"
-            (click)="removeProduct(product.product._id)"
-          >
-            <i class="fa-solid fa-trash-can main-color"></i
-            ><span class=""> Remove</span>
-          </button>
-        </div>
-        <div class="product-count">
-          <button
-            #plusBtn
-            class="btn btn-sm main-border fs-6"
-            (click)="
-              changeCount(
-                product.product._id,
-                product.count + 1,
-                plusBtn,
-                minusBtn
-              )
-            "
-          >
-            +
-          </button>
-          <span class="px-2 fw-bold">{{ product.count }}</span>
-          <button
-            #minusBtn
-            class="btn btn-sm main-border fs-6"
-            (click)="
-              changeCount(
-                product.product._id,
-                product.count - 1,
-                plusBtn,
-                minusBtn
-              )
-            "
-          >
-            -
-          </button>
-        </div>
-      </div>
     </div>
-    <button
-      class="main-btn rounded-pill px-3 mt-4"
-      [routerLink]="['/payment', cartData._id]"
-    >
-      Online payment <img src="./assets/images/visa-1.svg" alt="" />
-    </button>
-  </div>
-</section>
+    
+       }
+    
+        
+      
+        <div class="my-2">
+            <button [routerLink]="['/orders',DataCart._id]" class="btn btn-main rounded-4">Buy Now</button>
+        </div>
+    
+    
+        </div>
+    
+    </section>
+}
+@else {
+
+    <section class="bg-main-light rounded-4 shadow w-50 mx-auto p-2 text-center">
+        <h2 class="text-center">Cart Empty</h2>
+        <button routerLink="/home" class="btn btn-main d-block mx-auto"> home</button>
+    </section>
+}

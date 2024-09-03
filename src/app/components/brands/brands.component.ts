@@ -1,22 +1,36 @@
-import { Component, OnInit } from '@angular/core';
-import { Brand } from 'src/app/data-interface';
-import { ProductsService } from 'src/app/services/products.service';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { BrandsService } from '../../core/services/brands.service';
+import { ToastrService } from 'ngx-toastr';
+import { Ibrand } from '../../core/interface/ibrand';
+import { Subscription } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-brands',
+  standalone: true,
+  imports: [RouterLink],
   templateUrl: './brands.component.html',
-  styleUrls: ['./brands.component.scss'],
+  styleUrl: './brands.component.scss'
 })
-export class BrandsComponent implements OnInit {
-  constructor(private _ProductsService: ProductsService) {}
+export class BrandsComponent implements OnInit ,OnDestroy {
+private readonly _BrandsService=  inject(BrandsService)
+private readonly _ToastrService=  inject(ToastrService)
+endSub !:Subscription
+brands: Ibrand[]=[]
 
-  brandsData: Brand[] = [];
+ngOnInit() {
+  this._BrandsService.getBrands().subscribe({
+    next:(res)=>{
+      console.log(res)
+      this._ToastrService.success('our brands','Fresh Cart')
+      this.brands=res.data
+    }
+  })
+  
+}
 
-  ngOnInit(): void {
-    this._ProductsService.getBrands().subscribe({
-      next: ({ data }) => {
-        this.brandsData = data;
-      },
-    });
-  }
+
+ngOnDestroy(): void {
+  this.endSub?.unsubscribe();
+}
 }

@@ -1,75 +1,82 @@
-import { AfterViewInit, Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from 'src/app/services/auth.service';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
-import lottie from 'lottie-web';
+import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-register',
+  standalone: true,
+  imports: [ReactiveFormsModule,NgClass],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+  styleUrl: './register.component.scss'
 })
-export class RegisterComponent implements AfterViewInit {
-  constructor(private _AuthService: AuthService, private _Router: Router) {}
+export class RegisterComponent implements OnDestroy {
 
-  isLoading: boolean = false;
-  errorMsg: string = '';
-  animation: any;
-  container: Element | null = null;
+private readonly _FormBuilder=inject(FormBuilder)
+  private readonly _AuthService=inject(AuthService)
+  private readonly _Router = inject(Router)
+  private readonly _ToastrService=inject(ToastrService)
+  registerSub !:Subscription
 
-  registerForm: FormGroup = new FormGroup({
-    name: new FormControl('', [
-      Validators.required,
-      Validators.minLength(3),
-      Validators.maxLength(10),
-    ]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^\w{6,}$/),
-    ]),
-    rePassword: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^\w{6,}$/),
-    ]),
-    phone: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^01[0125][0-9]{8}$/),
-    ]),
-  });
+  
+  registerForm:FormGroup=this._FormBuilder.group({
+    name:[null,[Validators.required,Validators.minLength(3),Validators.maxLength(20)]],
+    email:[null,[Validators.required,Validators.email]],
+    password:[null,[Validators.required,Validators.pattern(/^\w{6,}$/)]],
+    rePassword:[null,[Validators.required]],
+    phone:[null,[Validators.required,Validators.pattern(/^(01)[0125][0-9]{8}$/)]]
+  },{validators:this.confirmPassword})
+  
 
-  registerData(): void {
-    this.isLoading = true;
-    if (this.registerForm.valid) {
-      this._AuthService.registerForm(this.registerForm.value).subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          if (response.message === 'success') {
-            this._Router.navigate(['/login']);
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          console.log(err);
-          this.errorMsg = err.error.message;
-        },
-      });
+  msgErr:string='';
+  isLoading:boolean=false;
+  AllSuccess:boolean=false
+
+  registerFormInfo(){
+    this.isLoading=true
+     if(this.registerForm.valid){
+  
+      this.registerSub = this._AuthService.gitRegister(this.registerForm.value).subscribe({
+            next:(res)=>{
+              
+              console.log(res);
+              if(res.message==='success'){
+                this._ToastrService.success(res.message,'Fresh Cart')
+                this.AllSuccess=true;
+                setTimeout(()=>{
+                  this._Router.navigate(['/login']);
+                },2000)
+  
+                
+              }
+  
+              this.isLoading=false
+            },
+            error:(err)=>{
+  
+              
+              this.isLoading=false
+            }
+          
+        })
+      console.log(this.registerForm.value);
+     }
     }
-  }
 
-  ngAfterViewInit(): void {
-    this.container = document.getElementById(
-      'your-animation-container-register'
-    );
-
-    if (this.container) {
-      this.animation = lottie.loadAnimation({
-        container: this.container,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: './assets/images/signup.json',
-      });
-    }
+  confirmPassword(g:AbstractControl){
+    if(g.get('password')?.value === g.get('rePassword')?.value){
+      return null;
   }
+  else{
+     return {mismatch:true};
+  }
+}
+
+ngOnDestroy(): void {
+  this.registerSub?.unsubscribe()
+}
+
 }

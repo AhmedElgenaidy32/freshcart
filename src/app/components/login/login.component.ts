@@ -1,61 +1,67 @@
-import { Component, AfterViewInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from 'src/app/services/auth.service';
-import { Router } from '@angular/router';
-import lottie from 'lottie-web';
+import { NgClass } from '@angular/common';
+import { Component, inject, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
+  imports: [ReactiveFormsModule,NgClass,RouterLink],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrl: './login.component.scss'
 })
-export class LoginComponent implements AfterViewInit {
-  constructor(private _AuthService: AuthService, private _Router: Router) {}
+export class LoginComponent  implements OnDestroy{
+  private readonly _AuthService =inject(AuthService)
+  private readonly _Router= inject(Router)
+   private readonly _FormBuilder=inject(FormBuilder)
+  private readonly _ToastrService= inject(ToastrService)
+   isLoading:boolean=false
+   AllDone:string= ""
+   msError:string=''
+  logSub !:Subscription
+   
 
-  isLoading: boolean = false;
-  errorMsg: string = '';
-  animation: any;
-  container: Element | null = null;
+  loginForm:FormGroup=this._FormBuilder.group({
+    email:[null, [Validators.required, Validators.email]],
+    password:[null, [Validators.required,Validators.pattern(/^\w{6,}$/)]]
+  })
+   
 
-  loginForm: FormGroup = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^\w{6,}$/),
-    ]),
-  });
 
-  loginData(): void {
-    this.isLoading = true;
-    if (this.loginForm.valid) {
-      this._AuthService.loginForm(this.loginForm.value).subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          if (response.message === 'success') {
-            localStorage.setItem('_token', response.token);
+  LogFormInfo(){
+   
+    console.log(this.loginForm.value);
+    if( this.loginForm.valid){
+      this.isLoading=true
+      this.logSub= this._AuthService.getLogin(this.loginForm.value).subscribe({
+        next:(res)=>(
+          console.log(res),
+          this._ToastrService.success(res.message,'Fresh cart'),
+          this.isLoading=true,
+          this.AllDone=res.message,
+          localStorage.setItem('token', res.token),
+          
+          this._AuthService.DataToken(),
+          setTimeout(()=>{
             this._Router.navigate(['/home']);
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          console.log(err);
-          this.errorMsg = err.error.message;
-        },
-      });
+          },2000)
+        ),
+        error:(err:HttpErrorResponse)=>(
+          console.log(err),
+          this.isLoading=false,
+          this.msError=err.error.message
+        )
+      })
     }
+    
+    this.isLoading=false
   }
 
-  ngAfterViewInit(): void {
-    this.container = document.getElementById('your-animation-container-login');
-
-    if (this.container) {
-      this.animation = lottie.loadAnimation({
-        container: this.container,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: './assets/images/freshCart.json',
-      });
-    }
+  ngOnDestroy(): void {
+    this.logSub?.unsubscribe()
   }
 }

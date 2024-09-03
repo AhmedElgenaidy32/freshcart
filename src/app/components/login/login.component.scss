@@ -1,5 +1,3 @@
-@media screen and (max-width: 992px) {
-  .row {
-    flex-direction: column-reverse;
-  }
+section input::placeholder{
+    color: #cccccc95 !important;
 }

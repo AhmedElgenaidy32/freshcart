@@ -1,70 +1,82 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { WishlistService } from '../../core/services/wishlist.service';
+import { Subscription } from 'rxjs';
+import { Iwish } from '../../core/interface/iwish';
+import { RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
-import { Product } from 'src/app/data-interface';
-import { CartService } from 'src/app/services/cart.service';
-import { WishlistService } from 'src/app/services/wishlist.service';
+import { SCartService } from '../../core/services/scart.service';
 
 @Component({
   selector: 'app-wishlist',
+  standalone: true,
+  imports: [RouterLink,CurrencyPipe],
   templateUrl: './wishlist.component.html',
-  styleUrls: ['./wishlist.component.scss'],
+  styleUrl: './wishlist.component.scss'
 })
-export class WishlistComponent implements OnInit {
-  constructor(
-    private _WishlistService: WishlistService,
-    private _CartService: CartService,
-    private _ToastrService: ToastrService
-  ) {}
+export class WishlistComponent implements OnInit, OnDestroy {
+private readonly _WishlistService=inject(WishlistService)
+private readonly _ToastrService=inject(ToastrService)
+private readonly _SCartService=inject(SCartService)
 
-  wishlistData: Product[] = [];
-  isEmpty: boolean = true;
 
+WishData:Iwish[]=[]
+responData:Iwish[]=[]
+
+
+btn:boolean=false
+
+endWishSub !:Subscription
   ngOnInit(): void {
-    this._WishlistService.getWishList().subscribe({
-      next: ({ data }) => {
-        if (data.length == 0) {
-          this.isEmpty = true;
-        } else {
-          this.wishlistData = data;
-          this.isEmpty = false;
+    this.endWishSub= this._WishlistService.GetWishList().subscribe({
+      next:(res)=>{
+        console.log(res);
+       
+        this.WishData=res.data
+        if(this.WishData.length==0){
+          this.btn=false
+        }else{
+          this.btn=true
         }
-      },
-    });
+      }
+    })
+ 
+    
   }
 
-  addProduct(id: string): void {
-    this._CartService.addToCart(id).subscribe({
-      next: (response) => {
-        this._CartService.cartCount.next(response.numOfCartItems);
-        this._ToastrService.success(response.message);
+
+  AddThisProductToCart(id:string){
+
+
+    
+    
+    this._SCartService.addProductToCart(id).subscribe({
+      next:(res)=> {
+       
+        this._ToastrService.success(res.message,'Fresh Cart')
+       
       },
-    });
+ 
+    })
   }
-
-  removeWish(id: string): void {
-    this._WishlistService.removeFromWishList(id).subscribe({
-      next: (response) => {
-        this._WishlistService.getWishList().subscribe({
-          next: ({ data }) => {
-            if (data.length == 0) {
-              this.isEmpty = true;
-            } else {
-              this.wishlistData = data;
-              this.isEmpty = false;
-            }
-          },
-        });
-
-        this._ToastrService.success(
-          'Product removed successfully from your wishlist'
-        );
-
-        this._WishlistService.wishCount.next(response.data.length);
-
-        if (response.data.length == 0) {
-          this.isEmpty = true;
+  DeleteItem(id:string):void{
+    this._WishlistService.deleteItem(id).subscribe({
+      next:(res)=>{
+        this._ToastrService.success(res.message,"Fresh Wishlist")
+        console.log(res);
+        
+        console.log(this.WishData);
+        this.responData = this.WishData.filter((item: Iwish) => item.id !== id)
+        this.WishData=this.responData
+        if(this.WishData.length==0){
+          this.btn=false
         }
+        
       },
-    });
+     
+    })
   }
+ngOnDestroy(): void {
+  this.endWishSub?.unsubscribe()
+}
 }

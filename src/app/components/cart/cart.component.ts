@@ -1,74 +1,104 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
-import { CartService } from 'src/app/services/cart.service';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { SCartService } from '../../core/services/scart.service';
+import { IPcart } from '../../core/interface/ipcart';
+import { CurrencyPipe } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { RouterLink } from '@angular/router';
+
 
 @Component({
   selector: 'app-cart',
+  standalone: true,
+  imports: [CurrencyPipe,RouterLink],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.scss'],
+  styleUrl: './cart.component.scss'
 })
-export class CartComponent implements OnInit {
-  constructor(
-    private _CartService: CartService,
-    private _Renderer2: Renderer2
-  ) {}
+export class CartComponent implements OnInit,OnDestroy {
+  private readonly _SCartService=inject(SCartService)
+  private readonly _ToastrService=inject(ToastrService)
+  DataCart:IPcart ={} as IPcart
 
-  cartData: any = {};
-  isEmpty: boolean = true;
+  btn:boolean=false
+  getAllEndSub !:Subscription
+  deleteItemEndSub !:Subscription
+  UpCountEndSub !:Subscription
+  DeleteAll !:Subscription
 
   ngOnInit(): void {
-    this._CartService.getCartData().subscribe({
-      next: (response) => {
-        if (response.numOfCartItems == 0) {
-          this.isEmpty = true;
-        } else {
-          this.cartData = response.data;
-          this.isEmpty = false;
+   
+    this.getAllEndSub=this._SCartService.getAllProductsInCart().subscribe({
+      next:(res)=>{
+       
+        this._ToastrService.success(res.status,'Fresh Cart')
+        this.DataCart=res.data
+
+        if(res.data.products.length !=0){
+          this.btn=true
         }
       },
-    });
+     
+    })
   }
 
-  changeCount(
-    prodId: string,
-    count: number,
-    plusBtn: HTMLButtonElement,
-    minusBtn: HTMLButtonElement
-  ): void {
-    if (count >= 1) {
-      this._Renderer2.setAttribute(plusBtn, 'disabled', 'true');
-      this._Renderer2.setAttribute(minusBtn, 'disabled', 'true');
+  DeleteItem(id:string){
+   this.deleteItemEndSub= this._SCartService.DeleteSpecificProduct(id).subscribe({
+      next:(res)=>{
+        console.log(res);
+        
+        this._ToastrService.success(res.status,'Fresh Cart')
+        this._SCartService.cartNum.next(res.numOfCartItems)
+        if(res.data.products.length ===0){
+          this.btn=false
+        }
+       this.ngOnInit()
+      },
+   
+    })
+  }
 
-      this._CartService.changeProductCount(prodId, count).subscribe({
-        next: ({ data }) => {
-          this.cartData = data;
 
-          this._Renderer2.removeAttribute(plusBtn, 'disabled');
-          this._Renderer2.removeAttribute(minusBtn, 'disabled');
+  DeleteAllInCart(){
+    this.DeleteAll= this._SCartService.DeleteAllProductsCart().subscribe({
+    next:(res)=>{
+      console.log(res);
+      
+      console.log('All items deleted from cart')
+      this._ToastrService.success(res.message,'Fresh Cart')
+      this.DataCart= {}as IPcart
+      this.btn=false;
+      this._SCartService.cartNum.next(0)
+    },
+      
+    })
+  }
+
+
+
+
+
+
+  UpdateCountNUM(id:string, count:number){
+    if(count>0){
+      this.UpCountEndSub=this._SCartService.updateCount(id ,count).subscribe({
+        next:(res)=>{
+         
+          this._ToastrService.success(res.status,'Fresh Cart')
+          this.DataCart=res.data
         },
-      });
+     
+      })
+    }else if(count ==0 ){
+      alert('if you want to delete product click on  trash')
     }
   }
 
-  removeProduct(prodId: string): void {
-    this._CartService.deleteProduct(prodId).subscribe({
-      next: (response) => {
-        this.cartData = response.data;
-        this._CartService.cartCount.next(response.numOfCartItems);
 
-        if (response.numOfCartItems == 0) {
-          this.isEmpty = true;
-        }
-      },
-    });
+  ngOnDestroy(): void {
+    this.getAllEndSub?.unsubscribe()
+    this.deleteItemEndSub?.unsubscribe()
+    this.UpCountEndSub?.unsubscribe()
+    this.getAllEndSub?.unsubscribe()
   }
 
-  removeAllProducts(): void {
-    this._CartService.emptyCart().subscribe({
-      next: () => {
-        this.cartData = {};
-        this.isEmpty = true;
-        this._CartService.cartCount.next(0);
-      },
-    });
-  }
 }
