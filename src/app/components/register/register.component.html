@@ -20,7 +20,7 @@
                             <p class="m-0"> name is required</p>
                             }
                             @else if (registerForm.get('name')?.getError('minlength')) {
-                            <p class="m-0">name should be at least 3 characters long</p>
+                            <p class="m-0">name should be at least 3 characters </p>
                             }
                             @else if (registerForm.get('name')?.getError('maxlength')) {
                             <p class="m-0">name shouldn't more than 20 characters</p>
@@ -61,7 +61,7 @@
                                      <p class="m-0">phone is required</p>
                                 }
                                 @else if (registerForm.get('phone')?.getError('pattern')) {
-                                    <p class="m-0">phone should be in format 01094828982</p>
+                                    <p class="m-0">phone should be in format 01123304658</p>
                                 }
                             </div>
                         }
@@ -96,7 +96,7 @@
                         type="Password" class="form-control" id="rePassword" placeholder="Enter rePassword" formControlName="rePassword" >
                         @if(registerForm.getError('mismatch') && (registerForm.get('rePassword')?.touched||registerForm.get('rePassword')?.dirty)) {
                             <div class="alert alert-danger w-50">
-                                 <p class="m-0">password and rePassword should be same</p>
+                                 <p class="m-0">password and rePassword should be the same</p>
                             </div>
                         }
                     </div>
@@ -113,7 +113,7 @@
 
                     @if (AllSuccess) {
                         <p class="alert alert-success">
-                            <i class="fas fa-check-circle"></i> Registration Successful! You can now login with your credentials.
+                            <i class="fas fa-check-circle"></i> Registration Successful! You can now log in with your credentials.
                         </p>
                     }
                 </form>

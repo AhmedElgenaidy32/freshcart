@@ -40,7 +40,7 @@
                     }
                     @else if(loginForm.get('password')?.getError('pattern')){
                         <div class="alert alert-danger w-50">
-                            <p class="m-0">Password must be at least 6 characters long</p>
+                            <p class="m-0">Password must be at least 6 characters </p>
                         </div>
                     }
                     
@@ -52,7 +52,7 @@
                         <a routerLink="/forget" class="link-primary mt-2 me-5 d-block" >
                             Forgot Password?  Click here to reset it.  <i class="fas fa-long-arrow-alt-right"></i>  
                         </a>
-                        <a routerLink="/register" class="link-primary d-block mb-3 ">create account</a>
+                        <a routerLink="/register" class="link-primary d-block mb-3 ">create an account</a>
                     <button  class="btn btn-main d-block ms-auto"  [disabled]="loginForm.invalid||isLoading">Login
                        @if (isLoading) {
                         <i class="fas fa-spin fa-spinner"></i>
