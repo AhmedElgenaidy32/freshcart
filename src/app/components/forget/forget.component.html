@@ -19,7 +19,7 @@
                 }
                 @else if(verifyEmail.get('email')?.getError('email') &&(verifyEmail.get('email')?.touched || verifyEmail.get('email')?.dirty)){
                     <div class="alert alert-danger w-50">
-                        <p class="m-0">Invalid email format</p>
+                        <p class="m-0">Invalid email </p>
                     </div>
                 }
                 <div class="row">
@@ -93,7 +93,7 @@
                  }
                  @else if(resetPassword.get('email')?.getError('email') &&(resetPassword.get('email')?.touched || resetPassword.get('email')?.dirty)){
                      <div class="alert alert-danger w-50">
-                         <p class="m-0">Invalid email format</p>
+                         <p class="m-0">Invalid email </p>
                      </div>
                  }
      
